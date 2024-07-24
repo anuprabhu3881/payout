@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Affiliate System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">Affiliate System</h1>
+
+    <!-- Add User Form -->
+    <h2>Add User</h2>
+    <form id="addUserForm">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="parent_id">Parent ID</label>
+            <input type="number" class="form-control" id="parent_id" name="parent_id">
+        </div>
+        <button type="submit" class="btn btn-primary">Add User</button>
+    </form>
+
+    <!-- Record Sale Form -->
+    <h2 class="mt-5">Record Sale</h2>
+    <form id="recordSaleForm">
+        <div class="form-group">
+            <label for="user_id">User ID</label>
+            <input type="number" class="form-control" id="user_id" name="user_id" required>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Record Sale</button>
+    </form>
+
+    <!-- View Records -->
+    <h2 class="mt-5">View Records</h2>
+    <button id="viewRecordsBtn" class="btn btn-secondary mb-3">View Records</button>
+    <div id="records"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#addUserForm').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: 'add_user.php',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                alert(response);
+                $('#addUserForm')[0].reset();
+            }
+        });
+    });
+
+    $('#recordSaleForm').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: 'record_sale.php',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                alert(response);
+                $('#recordSaleForm')[0].reset();
+            }
+        });
+    });
+
+    $('#viewRecordsBtn').click(function() {
+        $.ajax({
+            url: 'fetch_records.php',
+            type: 'GET',
+            success: function(response) {
+                const data = JSON.parse(response);
+                let html = '<h3>Users</h3><table class="table"><thead><tr><th>ID</th><th>Username</th><th>Parent ID</th><th>Level</th><th>Created At</th></tr></thead><tbody>';
+                data.users.forEach(user => {
+                    html += `<tr><td>${user.id}</td><td>${user.username}</td><td>${user.parent_id}</td><td>${user.level}</td><td>${user.created_at}</td></tr>`;
+                });
+                html += '</tbody></table>';
+
+                html += '<h3>Sales</h3><table class="table"><thead><tr><th>ID</th><th>User ID</th><th>Amount</th><th>Created At</th></tr></thead><tbody>';
+                data.sales.forEach(sale => {
+                    html += `<tr><td>${sale.id}</td><td>${sale.user_id}</td><td>${sale.amount}</td><td>${sale.created_at}</td></tr>`;
+                });
+                html += '</tbody></table>';
+
+                html += '<h3>Payouts</h3><table class="table"><thead><tr><th>ID</th><th>User ID</th><th>Sale ID</th><th>Commission</th><th>Level</th><th>Created At</th></tr></thead><tbody>';
+                data.payouts.forEach(payout => {
+                    html += `<tr><td>${payout.id}</td><td>${payout.user_id}</td><td>${payout.sale_id}</td><td>${payout.commission}</td><td>${payout.level}</td><td>${payout.created_at}</td></tr>`;
+                });
+                html += '</tbody></table>';
+
+                $('#records').html(html);
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
